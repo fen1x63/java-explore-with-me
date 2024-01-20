@@ -30,9 +30,9 @@ public class StatisticController {
                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
                                                @RequestParam("end")
                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
-                                               @RequestParam(name = "uris", required = false, defaultValue = "")
+                                               @RequestParam(name = "uris", defaultValue = "")
                                                List<String> uris,
-                                               @RequestParam(name = "unique", required = false, defaultValue = "false")
+                                               @RequestParam(name = "unique", defaultValue = "false")
                                                Boolean unique) {
         return statisticService.getStatistics(start, end, uris, unique);
     }
