@@ -22,7 +22,7 @@ import static ru.practicum.ewm.util.DateConstant.DATE_TIME_PATTERN;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PUBLIC)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventSearchDto {
 
     Long id;
@@ -54,6 +54,6 @@ public class EventSearchDto {
     @PositiveOrZero
     Integer from = 0;
     @Positive
-    Integer size = 10;
+    Integer size;
 
 }
