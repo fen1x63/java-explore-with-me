@@ -2,7 +2,6 @@ package ru.practicum.ewm.events.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.ewm.categories.dto.CategoryDto;
 import ru.practicum.ewm.events.model.State;
@@ -22,7 +21,6 @@ import static ru.practicum.ewm.util.DateConstant.DATE_TIME_PATTERN;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventSearchDto {
 
     Long id;
@@ -54,6 +52,6 @@ public class EventSearchDto {
     @PositiveOrZero
     Integer from = 0;
     @Positive
-    Integer size;
+    Integer size = 10;
 
 }
