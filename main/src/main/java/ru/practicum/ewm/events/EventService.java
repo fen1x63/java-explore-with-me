@@ -37,10 +37,7 @@ import ru.practicum.ewm.users.UserRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.ewm.events.model.State.PENDING;
@@ -205,15 +202,9 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public List<EventFullDtoWithViews> getEventsByAdminParams(EventAdminRequestDto adminRequestDto) {
-        List<Long> users = adminRequestDto.getUsers();
-        List<String> states = adminRequestDto.getStates();
-        List<Long> categories = adminRequestDto.getCategories();
-        LocalDateTime rangeStart = adminRequestDto.getRangeStart();
-        LocalDateTime rangeEnd = adminRequestDto.getRangeEnd();
-        Integer from = adminRequestDto.getFrom();
-        Integer size = adminRequestDto.getSize();
-
+    public List<EventFullDtoWithViews> getEventsByAdminParams(List<Long> users, List<String> states, List<Long> categories,
+                                                              LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                                              Integer from, Integer size) {
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("Incorrectly made request.");
         }
@@ -240,44 +231,39 @@ public class EventService {
         }
         List<Event> events = eventRepository.findAll(specification, PageRequest.of(from / size, size)).getContent();
         List<EventFullDtoWithViews> result = new ArrayList<>();
-        List<String> uris = events.stream()
-                .map(event -> String.format("/events/%s", event.getId()))
-                .collect(Collectors.toList());
-        LocalDateTime start = events.stream()
-                .map(Event::getCreatedOn)
-                .min(LocalDateTime::compareTo)
-                .orElseThrow(() -> new NotFoundException("Start was not found"));
-        ResponseEntity<Object> response = statsClient.getStats(start, LocalDateTime.now(), uris, true);
-        List<Long> ids = events.stream().map(Event::getId).collect(Collectors.toList());
-        Map<Long, Long> confirmedRequests = requestRepository.findAllByEventIdInAndStatus(ids, CONFIRMED).stream()
-                .collect(Collectors.toMap(ConfirmedRequests::getEvent, ConfirmedRequests::getCount));
-        for (Event event : events) {
-            ObjectMapper mapper = new ObjectMapper();
-            List<ViewStats> statsDto = mapper.convertValue(response.getBody(), new TypeReference<>() {
-            });
-            if (!statsDto.isEmpty()) {
-                result.add(EventMapper.toEventFullDtoWithViews(event, statsDto.get(0).getHits(),
-                        confirmedRequests.getOrDefault(event.getId(), 0L)));
-            } else {
-                result.add(EventMapper.toEventFullDtoWithViews(event, 0L,
-                        confirmedRequests.getOrDefault(event.getId(), 0L)));
+        if (events.isEmpty()) {
+            return result;
+        } else {
+            List<String> uris = events.stream()
+                    .map(event -> String.format("/events/%s", event.getId()))
+                    .collect(Collectors.toList());
+            Optional<LocalDateTime> start = events.stream()
+                    .map(Event::getCreatedOn)
+                    .min(LocalDateTime::compareTo);
+            ResponseEntity<Object> response = statsClient.getStats(start.get(), LocalDateTime.now(), uris, true);
+            List<Long> ids = events.stream().map(Event::getId).collect(Collectors.toList());
+            Map<Long, Long> confirmedRequests = requestRepository.findAllByEventIdInAndStatus(ids, CONFIRMED).stream()
+                    .collect(Collectors.toMap(ConfirmedRequests::getEvent, ConfirmedRequests::getCount));
+            for (Event event : events) {
+                ObjectMapper mapper = new ObjectMapper();
+                List<ViewStats> statsDto = mapper.convertValue(response.getBody(), new TypeReference<>() {
+                });
+                if (!statsDto.isEmpty()) {
+                    result.add(EventMapper.toEventFullDtoWithViews(event, statsDto.get(0).getHits(),
+                            confirmedRequests.getOrDefault(event.getId(), 0L)));
+                } else {
+                    result.add(EventMapper.toEventFullDtoWithViews(event, 0L,
+                            confirmedRequests.getOrDefault(event.getId(), 0L)));
+                }
             }
+            return result;
         }
-        return result;
     }
 
     @Transactional(readOnly = true)
-    public List<EventShortDtoWithViews> getEvents(EventRequestDto requestDto, HttpServletRequest request) {
-        String text = requestDto.getText();
-        List<Long> categories = requestDto.getCategories();
-        Boolean paid = requestDto.getPaid();
-        LocalDateTime rangeStart = requestDto.getRangeStart();
-        LocalDateTime rangeEnd = requestDto.getRangeEnd();
-        Boolean onlyAvailable = requestDto.getOnlyAvailable();
-        String sort = requestDto.getSort();
-        Integer from = requestDto.getFrom();
-        Integer size = requestDto.getSize();
-
+    public List<EventShortDtoWithViews> getEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
+                                                  LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, Integer from,
+                                                  Integer size, HttpServletRequest request) {
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("START can't ba after END.");
         }
@@ -298,7 +284,7 @@ public class EventService {
                     criteriaBuilder.equal(root.get("paid"), paid));
         }
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startDateTime = Objects.requireNonNullElse(rangeStart, now);
+        LocalDateTime startDateTime = Objects.requireNonNullElseGet(rangeStart, () -> now);
         specification = specification.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.greaterThan(root.get("eventDate"), startDateTime));
         if (rangeEnd != null) {
@@ -324,34 +310,37 @@ public class EventService {
         }
         List<Event> events = eventRepository.findAll(specification, pageRequest).getContent();
         List<EventShortDtoWithViews> result = new ArrayList<>();
-        List<String> uris = events.stream()
-                .map(event -> String.format("/events/%s", event.getId()))
-                .collect(Collectors.toList());
-        LocalDateTime start = events.stream()
-                .map(Event::getCreatedOn)
-                .min(LocalDateTime::compareTo)
-                .orElseThrow(() -> new NotFoundException("Start was not found"));
-        ResponseEntity<Object> response = statsClient.getStats(start, LocalDateTime.now(), uris, true);
-        List<Long> ids = events.stream().map(Event::getId).collect(Collectors.toList());
-        Map<Long, Long> confirmedRequests = requestRepository.findAllByEventIdInAndStatus(ids, CONFIRMED)
-                .stream()
-                .collect(Collectors.toMap(ConfirmedRequests::getEvent, ConfirmedRequests::getCount));
-        for (Event event : events) {
-            ObjectMapper mapper = new ObjectMapper();
-            List<ViewStats> statsDto = mapper.convertValue(response.getBody(), new TypeReference<>() {
-            });
-            if (!statsDto.isEmpty()) {
-                result.add(EventMapper.toEventShortDtoWithViews(event, statsDto.get(0).getHits(),
-                        confirmedRequests.getOrDefault(event.getId(), 0L)));
-            } else {
-                result.add(EventMapper.toEventShortDtoWithViews(event, 0L,
-                        confirmedRequests.getOrDefault(event.getId(), 0L)));
+        if (events.isEmpty()) {
+            return result;
+        } else {
+            List<String> uris = events.stream()
+                    .map(event -> String.format("/events/%s", event.getId()))
+                    .collect(Collectors.toList());
+            Optional<LocalDateTime> start = events.stream()
+                    .map(Event::getCreatedOn)
+                    .min(LocalDateTime::compareTo);
+            ResponseEntity<Object> response = statsClient.getStats(start.get(), LocalDateTime.now(), uris, true);
+            List<Long> ids = events.stream().map(Event::getId).collect(Collectors.toList());
+            Map<Long, Long> confirmedRequests = requestRepository.findAllByEventIdInAndStatus(ids, CONFIRMED)
+                    .stream()
+                    .collect(Collectors.toMap(ConfirmedRequests::getEvent, ConfirmedRequests::getCount));
+            for (Event event : events) {
+                ObjectMapper mapper = new ObjectMapper();
+                List<ViewStats> statsDto = mapper.convertValue(response.getBody(), new TypeReference<>() {
+                });
+                if (!statsDto.isEmpty()) {
+                    result.add(EventMapper.toEventShortDtoWithViews(event, statsDto.get(0).getHits(),
+                            confirmedRequests.getOrDefault(event.getId(), 0L)));
+                } else {
+                    result.add(EventMapper.toEventShortDtoWithViews(event, 0L,
+                            confirmedRequests.getOrDefault(event.getId(), 0L)));
+                }
             }
+            EndpointHitDto hit = new EndpointHitDto(app, request.getRequestURI(), request.getRemoteAddr(),
+                    LocalDateTime.now());
+            statsClient.saveHit(hit);
+            return result;
         }
-        EndpointHitDto hit = new EndpointHitDto(app, request.getRequestURI(), request.getRemoteAddr(),
-                LocalDateTime.now());
-        statsClient.saveHit(hit);
-        return result;
     }
 
     @Transactional(readOnly = true)
