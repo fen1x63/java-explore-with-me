@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 import static ru.practicum.ewm.util.DateConstant.DATE_TIME_PATTERN;
 
 @Builder
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)

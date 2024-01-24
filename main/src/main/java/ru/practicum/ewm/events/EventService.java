@@ -205,9 +205,15 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public List<EventFullDtoWithViews> getEventsByAdminParams(List<Long> users, List<String> states, List<Long> categories,
-                                                              LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                                              Integer from, Integer size) {
+    public List<EventFullDtoWithViews> getEventsByAdminParams(EventAdminRequestDto adminRequestDto) {
+        List<Long> users = adminRequestDto.getUsers();
+        List<String> states = adminRequestDto.getStates();
+        List<Long> categories = adminRequestDto.getCategories();
+        LocalDateTime rangeStart = adminRequestDto.getRangeStart();
+        LocalDateTime rangeEnd = adminRequestDto.getRangeEnd();
+        Integer from = adminRequestDto.getFrom();
+        Integer size = adminRequestDto.getSize();
+
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("Incorrectly made request.");
         }
@@ -261,9 +267,17 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public List<EventShortDtoWithViews> getEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-                                                  LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, Integer from,
-                                                  Integer size, HttpServletRequest request) {
+    public List<EventShortDtoWithViews> getEvents(EventRequestDto requestDto, HttpServletRequest request) {
+        String text = requestDto.getText();
+        List<Long> categories = requestDto.getCategories();
+        Boolean paid = requestDto.getPaid();
+        LocalDateTime rangeStart = requestDto.getRangeStart();
+        LocalDateTime rangeEnd = requestDto.getRangeEnd();
+        Boolean onlyAvailable = requestDto.getOnlyAvailable();
+        String sort = requestDto.getSort();
+        Integer from = requestDto.getFrom();
+        Integer size = requestDto.getSize();
+
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("START can't ba after END.");
         }

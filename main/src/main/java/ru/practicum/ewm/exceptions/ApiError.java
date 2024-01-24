@@ -1,15 +1,16 @@
 package ru.practicum.ewm.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static ru.practicum.ewm.util.DateConstant.DATE_TIME_PATTERN;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @Builder
 public class ApiError {
     private final List<String> errors;
