@@ -52,6 +52,6 @@ public class EventSearchDto {
     @PositiveOrZero
     Integer from = 0;
     @Positive
-    Integer size = 10;
+    final Integer size = 10;
 
 }
