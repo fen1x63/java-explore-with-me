@@ -2,16 +2,15 @@ package ru.practicum.ewm.events.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.events.EventService;
 import ru.practicum.ewm.events.dto.EventFullDtoWithViews;
 import ru.practicum.ewm.events.dto.EventSearchDto;
 import ru.practicum.ewm.events.dto.EventShortDtoWithViews;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Validated
@@ -23,8 +22,12 @@ public class EventControllerPublic {
 
     @GetMapping
     public List<EventShortDtoWithViews> getEvents(EventSearchDto eventSearchDto,
+                                                  @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero
+                                                  Integer from,
+                                                  @RequestParam(value = "size", defaultValue = "10") @Positive
+                                                  Integer size,
                                                   HttpServletRequest request) {
-        return eventService.getEvents(eventSearchDto, request);
+        return eventService.getEvents(eventSearchDto, from, size, request);
     }
 
     @GetMapping("/{eventId}")

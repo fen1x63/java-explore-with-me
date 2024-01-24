@@ -8,8 +8,6 @@ import ru.practicum.ewm.events.model.State;
 import ru.practicum.ewm.locations.LocationDto;
 import ru.practicum.ewm.users.dto.UserShortDto;
 
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -49,9 +47,5 @@ public class EventSearchDto {
     LocalDateTime rangeEnd;
     Boolean onlyAvailable = false;
     String sort = "EVENT_DATE";
-    @PositiveOrZero
-    Integer from = 0;
-    @Positive
-    final Integer size = 10;
 
 }
