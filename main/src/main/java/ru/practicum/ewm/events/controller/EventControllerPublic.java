@@ -21,7 +21,7 @@ public class EventControllerPublic {
     private final EventService eventService;
 
     @GetMapping
-    public List<EventShortDtoWithViews> getEvents(EventSearchDto eventSearchDto,
+    public List<EventShortDtoWithViews> getEvents(@ModelAttribute EventSearchDto eventSearchDto,
                                                   @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero
                                                   Integer from,
                                                   @RequestParam(value = "size", defaultValue = "10") @Positive
