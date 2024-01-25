@@ -261,7 +261,7 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public List<EventShortDtoWithViews> getEvents(EventSearchDto eventSearchDto, Integer from, Integer size,
+    public List<EventShortDtoWithViews> getEvents(EventSearchDto eventSearchDto,
                                                   HttpServletRequest request) {
         String text = eventSearchDto.getText();
         List<Long> categories = eventSearchDto.getCategories();
@@ -270,6 +270,8 @@ public class EventService {
         LocalDateTime rangeEnd = eventSearchDto.getRangeEnd();
         Boolean onlyAvailable = eventSearchDto.getOnlyAvailable();
         String sort = eventSearchDto.getSort();
+        Integer from = eventSearchDto.getFrom();
+        Integer size = eventSearchDto.getSize();
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("START can't ba after END.");

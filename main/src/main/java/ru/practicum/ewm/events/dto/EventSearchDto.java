@@ -47,5 +47,7 @@ public class EventSearchDto {
     LocalDateTime rangeEnd;
     Boolean onlyAvailable = false;
     String sort = "EVENT_DATE";
+    Integer from = 0;
+    Integer size = 10;
 
 }

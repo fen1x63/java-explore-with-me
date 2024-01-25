@@ -9,8 +9,6 @@ import ru.practicum.ewm.events.dto.EventSearchDto;
 import ru.practicum.ewm.events.dto.EventShortDtoWithViews;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Validated
@@ -22,12 +20,8 @@ public class EventControllerPublic {
 
     @GetMapping
     public List<EventShortDtoWithViews> getEvents(@ModelAttribute EventSearchDto eventSearchDto,
-                                                  @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero
-                                                  Integer from,
-                                                  @RequestParam(value = "size", defaultValue = "10") @Positive
-                                                  Integer size,
                                                   HttpServletRequest request) {
-        return eventService.getEvents(eventSearchDto, from, size, request);
+        return eventService.getEvents(eventSearchDto, request);
     }
 
     @GetMapping("/{eventId}")
