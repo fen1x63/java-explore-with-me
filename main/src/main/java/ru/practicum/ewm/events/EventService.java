@@ -271,7 +271,7 @@ public class EventService {
         Boolean onlyAvailable = eventSearchDto.getOnlyAvailable();
         String sort = eventSearchDto.getSort();
         Integer from = eventSearchDto.getFrom();
-        Integer size = eventSearchDto.getSize();
+        Integer size = 10;
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("START can't ba after END.");
