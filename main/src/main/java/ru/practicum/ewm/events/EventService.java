@@ -261,17 +261,9 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public List<EventShortDtoWithViews> getEvents(EventSearchDto eventSearchDto,
-                                                  HttpServletRequest request) {
-        String text = eventSearchDto.getText();
-        List<Long> categories = eventSearchDto.getCategories();
-        Boolean paid = eventSearchDto.getPaid();
-        LocalDateTime rangeStart = eventSearchDto.getRangeStart();
-        LocalDateTime rangeEnd = eventSearchDto.getRangeEnd();
-        Boolean onlyAvailable = eventSearchDto.getOnlyAvailable();
-        String sort = eventSearchDto.getSort();
-        Integer from = eventSearchDto.getFrom();
-        Integer size = 10;
+    public List<EventShortDtoWithViews> getEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
+                                                  LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, Integer from,
+                                                  Integer size, HttpServletRequest request) {
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("START can't ba after END.");
